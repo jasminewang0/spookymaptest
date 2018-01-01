@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Where I've Been</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        line-height: 10px;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 15%;
+        z-index: 5;
+        background-color: #000;
+        padding: 5px;
+        border: 1px solid #fff;
+        text-align: center;
+        color: #fff;
+        font-size: 12px;
+        font-family: 'Roboto','sans-serif';
+        line-height: 18px;
+        padding-left: 10px;
+      }
+      #floating-panel {
+        margin-left: -52px;
+      }
+      #floating-panel-2 {
+        position: absolute;
+        top: 10px;
+        left: 40%;
+        z-index: 5;
+        background-color: #000;
+        padding: 5px;
+        border: 1px solid #fff;
+        text-align: center;
+        color: #fff;
+        font-size: 12px;
+        font-family: 'Roboto','sans-serif';
+        line-height: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="floating-panel">
+      hello! these are my travels from 2013 - present!
+    </div>
+    <div id="floating-panel-2">
+      » zoom out for more places</br>
+      » click on markers for more info</br>
+      <button id="drop" onclick="drop()">drop 'em again!</button>
+    </div>
+    <div id="map"></div>
+    <script>
+
+      // If you're adding a number of markers, you may want to drop them on the map
+      // consecutively rather than all at once. This example shows how to use
+      // window.setTimeout() to space your markers' animation.
+
+      var cities = [
+        {lat: 48.856353, lng: 2.352551}, //paris
+        {lat: 60.170720, lng: 24.936255}, //helsinki
+        {lat: 39.914324, lng: 116.405654}, //beijing
+        {lat: 30.608011, lng: 114.316813}, //wuhan
+        {lat: 32.081721, lng: 118.776931}, //nanjing
+        {lat: 28.238775, lng: 112.953134}, //changsha
+        {lat: 29.105655, lng: 110.482584}, //zhangjiajie
+        {lat: 40.709461, lng: -73.998220}, //nyc
+        {lat: 47.608168, lng: -122.325242}, //seattle
+        {lat: 58.325943, lng: -134.414766}, //juneau
+        {lat: 58.110223, lng: -135.445682}, //hoonah
+        {lat: 35.216057, lng: -80.847382}, //charlotte
+        {lat: 38.912566, lng: -77.040325}, //dc
+        {lat: 32.774582, lng: -79.924816}, //charleston
+        {lat: 41.876438, lng: -87.623474}, //chicago
+      ];
+
+      var contentStrings = [
+        '<h2>Paris, France</h2> <p>August 2013 | Family Trip</p> <img src="paris/paris1.jpg" height="300" width="300">',
+        '<h2>Helsinki, Finland</h2> <p>July 2016 | Family Trip</p> <img src="helsinki/shib.JPG" height="300" width="300">',
+        '<h2>Beijing, China</h2> <p>June 2016 | Family Trip</p> <img src="china/mao.JPG" height="300" width="300">',
+        '<h2>Wuhan, China</h2> <p>June 2016 | Family Trip</p> <img src="china/whale.JPG" height="300" width="300">',
+        '<h2>Changsha, China</h2> <p>June 2016 | Family Trip</p> <img src="china/phoenix.JPG" height="300" width="300">',
+        '<h2>Nanjing, China</h2> <p>June 2016 | Family Trip</p> <img src="china/sunzhongshan.JPG" height="300" width="300">',
+        '<h2>Zhangjiajie, China</h2> <p>June 2016 | Family Trip</p> <img src="china/mtns.JPG" height="300" width="300">',
+        '<h2>New York City</h2> <p>August 2014 | Family Trip</p> <img src="usa/nyc.JPG" height="300" width="300">',
+        '<h2>Seattle, WA</h2> <p>March 2017 | Alaska Alternative Spring Break Trip</p> <img src="usa/waterfront.JPG" height="300" width="300">',
+        '<h2>Juneau, AK</h2> <p>March 2017 | Alaska Alternative Spring Break Trip</p> <img src="usa/icy.JPG" height="300" width="300">',
+        '<h2>Hoonah, AK</h2> <p>March 2017 | Alaska Alternative Spring Break Trip</p> <img src="usa/hoonah.JPG" height="300" width="300">',
+        '<h2>Charlotte, NC</h2> <p>Summer 2017 | Internship</p> <img src="usa/charlotte.JPG" height="300" width="300">',
+        '<h2>Washington, D.C.</h2> <p>October 2017 | Scholarship Trip</p> <img src="usa/dc.JPG" height="300" width="300">',
+        '<h2>Charleston, SC</h2> <p>December 2017 | Family Trip</p> <img src="usa/charleston.JPG" height="300" width="300">',
+        '<h2>Chicago, IL</h2> <p>December 2017 | Sibling Trip</p> ',
+      ]
+
+      var markers = [];
+      var windows = [];
+      var map;
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 3,
+          center: {lat: 43.606996, lng: -10.571554}
+        });
+
+        var home = new google.maps.Marker({ //Wilmington
+          position: {lat: 34.2257, lng: -77.9447},
+          map: map,
+          icon: 'houseicon.png',
+        });
+        var homewindow = new google.maps.InfoWindow({
+          content: '<h2>Wilmington, NC</h2> <p>My home!!!'
+        });
+        windows.push(homewindow);
+        home.addListener('click', function() {
+          closeAllWindows();
+          homewindow.open(map, home);
+        });
+
+        var school = new google.maps.Marker({ //Raleigh
+          position: {lat: 35.780208, lng: -78.642321},
+          map: map,
+          icon: 'gradicon.png'
+        });
+        var schoolwindow = new google.maps.InfoWindow({
+          content: '<h2>Raleigh, NC</h2> <p>College!!!'
+        });
+        windows.push(schoolwindow);
+        school.addListener('click', function() {
+          closeAllWindows();
+          schoolwindow.open(map, school);
+        });
+
+        drop();
+      }
+
+      function drop() {
+        clearMarkers();
+        for (var i = 0; i < cities.length; i++) {
+          addMarker(cities[i], contentStrings[i]);
+        }
+      }
+
+      function addMarker(position, text) {
+        var marker = new google.maps.Marker({
+          position: position,
+          map: map,
+          icon: 'pin.png',
+          animation: google.maps.Animation.DROP
+        });
+        var infowindow = new google.maps.InfoWindow({
+          content: text
+        });
+        windows.push(infowindow);
+        marker.addListener('click', function() {
+          closeAllWindows();
+          infowindow.open(map, marker);
+        });
+
+        markers.push(marker);
+        /*
+        window.setTimeout(function() {
+          markers.push(marker);
+        }, timeout); */
+      }
+
+      function closeAllWindows() {
+        for (var i = 0; i < windows.length; i++) {
+           windows[i].close();
+        }
+      }
+
+      function clearMarkers() {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+        }
+        markers = [];
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8k32PYTwtLvwK_vaxp2UgxteQzUejzWA&callback=initMap">
+    </script>
+  </body>
+</html>
